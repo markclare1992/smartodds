@@ -1,3 +1,4 @@
+"""Functionality for fetching data from the football-data.co.uk website."""
 import datetime
 import time
 
@@ -6,9 +7,14 @@ import pandas as pd
 import requests as req
 from bs4 import BeautifulSoup
 
-from smartodds.data_fetching.config import CUSTOM_HEADER, \
-    RAW_MLS_FOOTBALLDATA_URL, history_url, FITSET_CUTTOFF, \
-    SIMULATION_SET_START, SIMULATION_SET_END
+from smartodds.data_fetching.config import (
+    CUSTOM_HEADER,
+    FITSET_CUTTOFF,
+    RAW_MLS_FOOTBALLDATA_URL,
+    SIMULATION_SET_END,
+    SIMULATION_SET_START,
+    history_url,
+)
 from smartodds.data_fetching.team_mappings import TEAM_MAPPINGS
 
 
@@ -50,8 +56,7 @@ def get_season_link(season: str, season_dict: dict) -> str:
     return "https://fbref.com/" + season_dict[season]
 
 
-def find_table_by_caption(tables: list,
-                          caption_text: str) -> BeautifulSoup | None:
+def find_table_by_caption(tables: list, caption_text: str) -> BeautifulSoup | None:
     """Find a table by its caption text."""
     for table in tables:
         caption = table.find("caption")
@@ -60,8 +65,7 @@ def find_table_by_caption(tables: list,
     return None
 
 
-def get_season_teams(season_link: str,
-                     season: str) -> pd.DataFrame | None:
+def get_season_teams(season_link: str, season: str) -> pd.DataFrame | None:
     """
     Get the teams and their conferences for a given season.
 
@@ -99,8 +103,7 @@ def get_season_teams(season_link: str,
     return pd.concat([eastern_df, western_df])
 
 
-def get_team_conference_for_seasons(seasons: list,
-                                    season_dict: dict) -> pd.DataFrame:
+def get_team_conference_for_seasons(seasons: list, season_dict: dict) -> pd.DataFrame:
     """
     Fetch the league table, split into eastern and western conferences, for a given list of seasons and league.
     Get team names and conference for each team.
@@ -117,15 +120,14 @@ def get_team_conference_for_seasons(seasons: list,
         team_conference = pd.concat(
             [
                 team_conference,
-                get_season_teams(get_season_link(str(season), season_dict),
-                                 season),
+                get_season_teams(get_season_link(str(season), season_dict), season),
             ]
         )
     return team_conference
 
 
 def get_conference_for_seasons(
-        starting_season: int, ending_season: int, season_dict: dict
+    starting_season: int, ending_season: int, season_dict: dict
 ) -> pd.DataFrame:
     """
     Get the conference for each team for a given range of seasons.
@@ -139,14 +141,12 @@ def get_conference_for_seasons(
         pd.DataFrame: The teams and their conferences for the given seasons.
     """
     return get_team_conference_for_seasons(
-        [str(i) for i in range(starting_season, ending_season + 1)],
-        season_dict
+        [str(i) for i in range(starting_season, ending_season + 1)], season_dict
     )
 
 
 def apply_mappings(
-        mls_conference_per_season_df: pd.DataFrame,
-        football_data_df: pd.DataFrame
+    mls_conference_per_season_df: pd.DataFrame, football_data_df: pd.DataFrame
 ) -> pd.DataFrame:
     """
     Apply the mappings to the football data.
@@ -171,8 +171,7 @@ def apply_mappings(
         how="left",
         suffixes=("_home", "_away"),
     )
-    football_data_df = football_data_df.drop(["Squad_home", "Squad_away"],
-                                             axis=1)
+    football_data_df = football_data_df.drop(["Squad_home", "Squad_away"], axis=1)
     return football_data_df
 
 
@@ -188,8 +187,7 @@ def generate_team_descriptions(mls_team_conference: pd.DataFrame) -> dict:
             start = prev = seasons[0]
             for season in seasons[1:]:
                 if season != prev + 1:
-                    ranges.append(
-                        f"{start}-{prev}" if start != prev else f"{start}")
+                    ranges.append(f"{start}-{prev}" if start != prev else f"{start}")
                     start = season
                 prev = season
             ranges.append(f"{start}-{prev}" if start != prev else f"{start}")
@@ -200,11 +198,11 @@ def generate_team_descriptions(mls_team_conference: pd.DataFrame) -> dict:
 
 
 def apply_dataset_flag(
-        merged_data: pd.DataFrame,
-        training_end: datetime.datetime,
-        simulation_start: datetime.datetime,
-        simulation_end: datetime.datetime,
-        training_start: datetime.datetime | None = None,
+    merged_data: pd.DataFrame,
+    training_end: datetime.datetime,
+    simulation_start: datetime.datetime,
+    simulation_end: datetime.datetime,
+    training_start: datetime.datetime | None = None,
 ) -> pd.DataFrame:
     """
     Apply the dataset flag to the merged data.
@@ -226,8 +224,7 @@ def apply_dataset_flag(
     if training_start is None:
         training_start = merged_data["Date"].min()
     merged_data.loc[
-        (merged_data["Date"] >= training_start) & (
-                merged_data["Date"] <= training_end),
+        (merged_data["Date"] >= training_start) & (merged_data["Date"] <= training_end),
         "Dataset",
     ] = "fitset"
     merged_data.loc[
@@ -239,13 +236,13 @@ def apply_dataset_flag(
 
 
 def _add_extra_details(df: pd.DataFrame) -> pd.DataFrame:
-    df['total_goals'] = df['HG'] + df['AG']
-    df['Date'] = pd.to_datetime(df['Date'])
-    df['month'] = df['Date'].dt.month
-    df['year'] = df['Date'].dt.year
+    df["total_goals"] = df["HG"] + df["AG"]
+    df["Date"] = pd.to_datetime(df["Date"])
+    df["month"] = df["Date"].dt.month
+    df["year"] = df["Date"].dt.year
 
-    df['home_game_number'] = df.groupby(['Season', 'Home'])['Date'].rank()
-    df['away_game_number'] = df.groupby(['Season', 'Away'])['Date'].rank()
+    df["home_game_number"] = df.groupby(["Season", "Home"])["Date"].rank()
+    df["away_game_number"] = df.groupby(["Season", "Away"])["Date"].rank()
     return df
 
 
@@ -260,28 +257,36 @@ def get_fixture_conference_summary_date(merged_dataframe: pd.DataFrame):
         pd.DataFrame: The fixture conference summary.
     """
     fixture_conference_summary = (
-        merged_dataframe
-        .assign(same_conference=merged_dataframe['Conference_home'] ==
-                                merged_dataframe['Conference_away'])
-        .groupby(['Dataset', 'same_conference'])
+        merged_dataframe.assign(
+            same_conference=merged_dataframe["Conference_home"]
+            == merged_dataframe["Conference_away"]
+        )
+        .groupby(["Dataset", "same_conference"])
         .size()
         .unstack(fill_value=0)
-        .rename(columns={True: 'same_conference_count',
-                         False: 'different_conference_count'})
+        .rename(
+            columns={True: "same_conference_count", False: "different_conference_count"}
+        )
         .assign(
-            total=lambda df: df['same_conference_count'] + df[
-                'different_conference_count'],
-            true_percentage=lambda df: df['same_conference_count'] / df[
-                'total'] * 100,
-            false_percentage=lambda df: df['different_conference_count'] / df[
-                'total'] * 100
+            total=lambda df: df["same_conference_count"]
+            + df["different_conference_count"],
+            true_percentage=lambda df: df["same_conference_count"] / df["total"] * 100,
+            false_percentage=lambda df: df["different_conference_count"]
+            / df["total"]
+            * 100,
         )
         .reset_index()
     )
 
     return fixture_conference_summary[
-        ['Dataset', 'same_conference_count', 'different_conference_count',
-         'true_percentage', 'false_percentage']]
+        [
+            "Dataset",
+            "same_conference_count",
+            "different_conference_count",
+            "true_percentage",
+            "false_percentage",
+        ]
+    ]
 
 
 def filter_for_same_conference(merged_df: pd.DataFrame) -> pd.DataFrame:
@@ -295,15 +300,13 @@ def filter_for_same_conference(merged_df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: The filtered DataFrame.
     """
     return (
-        merged_df.loc[
-            merged_df['Conference_home'] == merged_df['Conference_away']]
-        .assign(Conference=lambda df: df['Conference_home'])
-        .assign(goal_diff=lambda df: df['HG'] - df['AG'])
+        merged_df.loc[merged_df["Conference_home"] == merged_df["Conference_away"]]
+        .assign(Conference=lambda df: df["Conference_home"])
+        .assign(goal_diff=lambda df: df["HG"] - df["AG"])
     )
 
 
-def get_conference_home_advantage_info(
-        merged_df: pd.DataFrame) -> pd.DataFrame:
+def get_conference_home_advantage_info(merged_df: pd.DataFrame) -> pd.DataFrame:
     """
     Take the results dataframe, filter for same conference, group by home_conference,
     calculate mean home goals, mean away goals, total number of fixtures in each group,
@@ -316,54 +319,56 @@ def get_conference_home_advantage_info(
         pd.DataFrame: The conference home advantage information with statistical significance.
     """
     conference_home_advantage_info = (
-        merged_df.loc[
-            merged_df['Conference_home'] == merged_df['Conference_away']]
-        .groupby('Conference_home')
+        merged_df.loc[merged_df["Conference_home"] == merged_df["Conference_away"]]
+        .groupby("Conference_home")
         .agg(
-            mean_home_goals=('HG', 'mean'),
-            mean_away_goals=('AG', 'mean'),
-            total_fixtures=('HG', 'count')
+            mean_home_goals=("HG", "mean"),
+            mean_away_goals=("AG", "mean"),
+            total_fixtures=("HG", "count"),
         )
         .reset_index()
-        .rename(columns={'Conference_home': 'Conference'})
-        .assign(mean_home_advantage=lambda df: df['mean_home_goals'] - df[
-            'mean_away_goals'])
+        .rename(columns={"Conference_home": "Conference"})
+        .assign(
+            mean_home_advantage=lambda df: df["mean_home_goals"] - df["mean_away_goals"]
+        )
     )
 
     return conference_home_advantage_info
 
 
 def get_conference_home_advantage_info_with_confidence_intervals(
-        merged_df: pd.DataFrame) -> pd.DataFrame:
-    """
-    """
+    merged_df: pd.DataFrame,
+) -> pd.DataFrame:
+    """ """
     same_conference_df = merged_df.loc[
-        merged_df['Conference_home'] == merged_df['Conference_away']]
+        merged_df["Conference_home"] == merged_df["Conference_away"]
+    ]
 
     # Group by home conference and calculate mean goals, total fixtures, and home advantage
     conference_home_advantage_info = (
-        same_conference_df
-        .groupby('Conference_home')
+        same_conference_df.groupby("Conference_home")
         .agg(
-            mean_home_goals=('HG', 'mean'),
-            sd_home_goals=('HG', 'std'),
-            mean_away_goals=('AG', 'mean'),
-            sd_away_goals=('AG', 'std'),
-            total_fixtures=('HG', 'count')
+            mean_home_goals=("HG", "mean"),
+            sd_home_goals=("HG", "std"),
+            mean_away_goals=("AG", "mean"),
+            sd_away_goals=("AG", "std"),
+            total_fixtures=("HG", "count"),
         )
         .reset_index()
-        .rename(columns={'Conference_home': 'Conference'})
-        .assign(home_advantage=lambda df: df['mean_home_goals'] - df[
-            'mean_away_goals'])
+        .rename(columns={"Conference_home": "Conference"})
+        .assign(home_advantage=lambda df: df["mean_home_goals"] - df["mean_away_goals"])
     )
     # Perform bootstrapping for each conference and add confidence intervals to the DataFrame
-    ci_bounds = conference_home_advantage_info['Conference'].apply(
+    ci_bounds = conference_home_advantage_info["Conference"].apply(
         lambda conference: perform_bootstrap_confidence_interval(
-            same_conference_df, conference)
+            same_conference_df, conference
+        )
     )
 
-    conference_home_advantage_info['ci_lower'], conference_home_advantage_info[
-        'ci_upper'] = zip(*ci_bounds)
+    (
+        conference_home_advantage_info["ci_lower"],
+        conference_home_advantage_info["ci_upper"],
+    ) = zip(*ci_bounds)
 
     return conference_home_advantage_info
 
@@ -393,9 +398,9 @@ def bootstrap_mean_diff(home_goals, away_goals, num_samples=10000):
     return lower_bound, upper_bound
 
 
-def perform_bootstrap_confidence_interval(same_conference_df: pd.DataFrame,
-                                          conference: str,
-                                          num_samples=10000) -> tuple:
+def perform_bootstrap_confidence_interval(
+    same_conference_df: pd.DataFrame, conference: str, num_samples=10000
+) -> tuple:
     """
     Perform bootstrapping to estimate the confidence interval for the difference in means.
 
@@ -408,14 +413,17 @@ def perform_bootstrap_confidence_interval(same_conference_df: pd.DataFrame,
         tuple: Lower and upper bounds of the 95% confidence interval for the difference in means.
     """
     home_goals = same_conference_df.loc[
-        same_conference_df['Conference_home'] == conference, 'HG']
+        same_conference_df["Conference_home"] == conference, "HG"
+    ]
     away_goals = same_conference_df.loc[
-        same_conference_df['Conference_home'] == conference, 'AG']
+        same_conference_df["Conference_home"] == conference, "AG"
+    ]
     return bootstrap_mean_diff(home_goals, away_goals, num_samples)
 
 
 def compare_conference_home_advantage(
-        conference_home_advantage_info: pd.DataFrame) -> str:
+    conference_home_advantage_info: pd.DataFrame,
+) -> str:
     """
     Compare the home advantage between Eastern and Western Conferences using confidence intervals.
 
@@ -426,13 +434,13 @@ def compare_conference_home_advantage(
         str: A statement indicating whether the home advantage is statistically different between the conferences.
     """
     east_ci = conference_home_advantage_info.loc[
-        conference_home_advantage_info['Conference'] == 'Eastern', ['ci_lower',
-                                                                    'ci_upper']].values[
-        0]
+        conference_home_advantage_info["Conference"] == "Eastern",
+        ["ci_lower", "ci_upper"],
+    ].values[0]
     west_ci = conference_home_advantage_info.loc[
-        conference_home_advantage_info['Conference'] == 'Western', ['ci_lower',
-                                                                    'ci_upper']].values[
-        0]
+        conference_home_advantage_info["Conference"] == "Western",
+        ["ci_lower", "ci_upper"],
+    ].values[0]
 
     if east_ci[1] < west_ci[0] or west_ci[1] < east_ci[0]:
         return "The home advantage is statistically different between the Eastern and Western Conferences."
@@ -443,12 +451,11 @@ def compare_conference_home_advantage(
 if __name__ == "__main__":
     valid_seasons = get_all_valid_seasons()
     mls_team_conference = get_conference_for_seasons(2012, 2024, valid_seasons)
-    mls_team_conference["Squad"] = mls_team_conference["Squad"].replace(
-        TEAM_MAPPINGS)
+    mls_team_conference["Squad"] = mls_team_conference["Squad"].replace(TEAM_MAPPINGS)
     generate_team_descriptions(mls_team_conference)
     mls_team_conference.to_csv("mls_team_conference.csv", index=False)
     football_data = fetch_footballdata_data()
-    mls_team_conference = pd.read_csv('mls_team_conference.csv')
+    mls_team_conference = pd.read_csv("mls_team_conference.csv")
     merged_data = apply_mappings(mls_team_conference, football_data)
     merged_data = apply_dataset_flag(
         merged_data, FITSET_CUTTOFF, SIMULATION_SET_START, SIMULATION_SET_END

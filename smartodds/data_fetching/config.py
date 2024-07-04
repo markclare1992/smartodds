@@ -1,3 +1,4 @@
+"""File containing the configuration for the data fetching module."""
 import datetime
 
 CUSTOM_HEADER = {

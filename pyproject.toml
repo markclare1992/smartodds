@@ -23,3 +23,39 @@ matplotlib = "^3.9.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 88
+#extend-include = ["*.pyi", "*.ipynb"] # lint and format .pyi and .ipynb files
+
+[tool.ruff.lint]
+select = [
+#     pydocstyle, probably not needed
+#    "D",
+    # pycodestyle error
+    "E",
+    # pycodestyle warning
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    #mccable
+    "C90",
+    #pylint,
+#    "PL"
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds 5.
+max-complexity = 18
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
