@@ -1,4 +1,5 @@
 """Utility functions for the model module."""
+
 from typing import Any, Tuple
 
 import numpy as np

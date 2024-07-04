@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.10  # Ruff version.
+    hooks:
+      # Run the linter.
+      - id: ruff
+        types_or: [python, pyi] # Exclude Jupyter Notebooks for now.
+        args: [--fix]
+      # Run the formatter.
+      - id: ruff-format
+        types_or: [python, pyi] # Exclude Jupyter Notebooks for now.
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.910  # Specify the mypy version. Adjust this to the version you need.
+    hooks:
+      - id: mypy
+        args: [--ignore-missing-imports]
+        additional_dependencies: [tokenize-rt==3.2.0]
+        types: [python]

@@ -1,4 +1,5 @@
 """Functionality for fetching data from the football-data.co.uk website."""
+
 import datetime
 import time
 

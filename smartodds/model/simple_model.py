@@ -1,4 +1,5 @@
 """Simple Poisson model for football match prediction."""
+
 from typing import Tuple
 
 import numpy as np

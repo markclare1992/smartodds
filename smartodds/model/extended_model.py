@@ -1,4 +1,5 @@
 """Extended model class."""
+
 from typing import Tuple
 
 import numpy as np

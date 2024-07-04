@@ -1,4 +1,5 @@
 """Base model class for Poisson regression models."""
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Tuple
 
@@ -14,6 +15,7 @@ from smartodds.model.utils import create_match_array
 
 class BaseModelClass(ABC):
     """Base class for Poisson regression models."""
+
     def __init__(self, data_file_path: str, comparison_file_path: str):
         self.data_file_path = data_file_path
         self.comparison_file_path = comparison_file_path
@@ -249,6 +251,7 @@ class BaseModelClass(ABC):
         )
 
         return metrics
+
     @staticmethod
     def simulate_season(
         team_1_ids,

@@ -1,4 +1,5 @@
 """Dictionary of team name mappings for the data fetching module."""
+
 TEAM_MAPPINGS = {
     "Atlanta Utd": "Atlanta United",
     "Austin": "Austin FC",
